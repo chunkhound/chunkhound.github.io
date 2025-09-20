@@ -50,16 +50,14 @@ Before using the Code Expert Agent, you need ChunkHound set up and running:
 </Card>
 
 ## How to Use It
-### 1. Copy the Agent Definition
 
-Add this agent to your Claude Code configuration:
+### 1. Create the Agent File
 
-<details>
-<summary>Click to expand full agent definition</summary>
+Create a markdown file `.claude/agents/code-expert.md` with the following content:
 
 `````markdown
 ---
-name: code-expert
+name: Code Expert
 
 description: Use this a **READ ONLY** agent (**CAN'T WRITE TO FILES**) that when you need to understand the architecture, structure, and design patterns of a codebase before coding. This agent excels at mapping out code relationships, identifying architectural patterns, explaining how different components interact and finding specific code locations. Examples: <example>Context: User needs to add a new feature. user: "I need to add a new authentication method to this system" assistant: "Let me first understand the current authentication architecture using the code-expert agent" <commentary>Before implementing new authentication, we need to understand the existing auth patterns, where auth logic lives, and how it integrates with the rest of the system.</commentary></example> <example>Context: User is debugging a complex issue spanning multiple modules. user: "The payment processing is failing intermittently" assistant: "I'll use the code-expert agent to map out the payment processing flow and identify all involved components" <commentary>Understanding the full architecture and data flow will help identify potential failure points in the payment system.</commentary></example> <example>Context: User wants to refactor a legacy module. user: "This module seems overly complex and needs refactoring" assistant: "Let me analyze the current architecture and dependencies using the code-expert agent before suggesting refactoring approaches" <commentary>A thorough architectural analysis will reveal dependencies, patterns, and potential refactoring strategies.</commentary></example>
 
@@ -143,8 +141,6 @@ Structure your analysis as follows:
 
 - **Critical Code Sections**: [Important logic with file:line references]
 
-
-
 ## Data Flow
 
 [How data moves through the system with specific file/function references]
@@ -178,10 +174,7 @@ Structure your analysis as follows:
 - **Lines**: [Start Line, End Line]
 
 - **Description**: [Why this chunk is relevant to the task at hand]
-
 ```
-
-
 
 **Quality Principles:**
 - Always provide specific file paths and line numbers for key findings
@@ -200,8 +193,6 @@ Structure your analysis as follows:
 
 Remember: Your analysis should give developers a mental model of the system that allows them to navigate and modify the code confidently. Every insight should be backed by specific code references.
 `````
-
-</details>
 
 <Aside type="tip" title="Agent Tools">
 The Code Expert Agent uses ChunkHound's MCP tools (`mcp__ChunkHound__search_semantic`, `mcp__ChunkHound__search_regex`) for its analysis. If these tools aren't available, check your [MCP configuration](/tutorial/#ide-setup) and ensure ChunkHound is running as an MCP server.
@@ -258,7 +249,7 @@ ChunkHound implements a sophisticated Dynamic Multi-Hop Semantic Search algorith
 
 ### Key Components
 
-1. **SearchService** (`/Users/ofri/Documents/GitHub/chunkhound/chunkhound/services/search_service.py`)
+1. **SearchService** (`chunkhound/services/search_service.py`)
    - Main orchestrator that decides between standard and multi-hop search
    - Lines 77-91: Strategy selection based on provider capabilities
 
@@ -468,25 +459,25 @@ Query: "authentication error handling"
 
 ### Core Implementation
 
-- Main algorithm: `/Users/ofri/Documents/GitHub/chunkhound/chunkhound/services/search_service.py:151-403`
+- Main algorithm: `chunkhound/services/search_service.py:151-403`
 - Strategy selection: Lines 77-102
 - Expansion loop: Lines 240-372
 - Termination logic: Lines 242-367
 
 ### Supporting Components
 
-- Database similarity: `/Users/ofri/Documents/GitHub/chunkhound/chunkhound/providers/database/duckdb_provider.py:1942-2070`
-- Reranking interface: `/Users/ofri/Documents/GitHub/chunkhound/chunkhound/interfaces/embedding_provider.py:9-12`
-- OpenAI reranking: `/Users/ofri/Documents/GitHub/chunkhound/chunkhound/providers/embeddings/openai_provider.py:693-815`
+- Database similarity: `chunkhound/providers/database/duckdb_provider.py:1942-2070`
+- Reranking interface: `chunkhound/interfaces/embedding_provider.py:9-12`
+- OpenAI reranking: `chunkhound/providers/embeddings/openai_provider.py:693-815`
 
 ### Configuration
 
-- Embedding config: `/Users/ofri/Documents/GitHub/chunkhound/chunkhound/core/config/embedding_config.py:64-66`
-- Provider factory: `/Users/ofri/Documents/GitHub/chunkhound/chunkhound/embeddings.py:148-167`
+- Embedding config: `chunkhound/core/config/embedding_config.py:64-66`
+- Provider factory: `chunkhound/embeddings.py:148-167`
 
 ### Testing
 
-- Multi-hop tests: `/Users/ofri/Documents/GitHub/chunkhound/tests/test_multi_hop_semantic_search.py:1-100`
+- Multi-hop tests: `chunkhound/tests/test_multi_hop_semantic_search.py:1-100`
 - Test documentation: Lines 1-13 explain semantic bridging test strategy
 
 The algorithm represents a sophisticated approach to code search that goes beyond simple similarity matching to discover semantically related code through iterative expansion and relevance scoring.
