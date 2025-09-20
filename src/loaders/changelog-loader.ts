@@ -8,7 +8,7 @@ export function changelogLoader(): Loader {
     name: 'changelog-loader',
     async load({ store, logger, watcher, parseData }) {
       // Configurable changelog path with fallback to project root
-      const relativePath = process.env.CHANGELOG_PATH || '../CHANGELOG.md';
+      const relativePath = process.env.CHANGELOG_PATH || './CHANGELOG.md';
       const changelogPath = path.resolve(process.cwd(), relativePath);
       
       logger.info('Loading changelog from ' + changelogPath);
