@@ -37,6 +37,7 @@ export default defineConfig({
         { label: "Under the Hood", slug: "under-the-hood" },
         { label: "Origin Story", slug: "origin-story" },
         { label: "Changelog", link: "/changelog" },
+        { label: "Contributing", slug: "contributing" },
       ],
     }),
   ],
