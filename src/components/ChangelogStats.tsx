@@ -28,14 +28,14 @@ const ChangelogStats: React.FC<ChangelogStatsProps> = ({ versions }) => {
 
   // Format days ago display
   const formatDaysAgo = (days: number): string => {
-    if (days === 0) return "Today";
-    if (days === 1) return "Yesterday";
+    // if (days === 0) return "Today";
+    // if (days === 1) return "Yesterday";
     return `${days}`;
   };
 
   const formatDaysLabel = (days: number): string => {
-    if (days === 0) return "Released";
-    if (days === 1) return "Day Ago";
+    // if (days === 0) return "Released";
+    // if (days === 1) return "Day Ago";
     return "Days Ago";
   };
 
