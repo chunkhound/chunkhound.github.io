@@ -1,0 +1,16 @@
+/* ChunkHound Homepage Minimal Components */
+/* Compact styling for Starlight native components */
+
+/* Comparison section using Starlight Aside components */
+.comparison-simple {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+@media (max-width: 768px) {
+  .comparison-simple {
+    grid-template-columns: 1fr;
+  }
+}
