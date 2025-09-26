@@ -1,35 +1,105 @@
 ---
-title: Code Expert Agent
-description: Advanced architectural analysis using ChunkHound's search - understand codebases before coding
+title: Code Expert - Deep Research for Code & Files
+description: Understand your complete engineering knowledge - code, markdown files, and architectural decisions - before writing new code
 ---
 
 import { Card, CardGrid, Aside } from '@astrojs/starlight/components';
 
-Your codebase has `validateEmail()`. AI doesn't know, creates a new one. Next week, another AI creates `checkEmailFormat()`. Soon you have 7 validators. The Code Expert Agent stops this by analyzing your code first.
+## From Simple Search to Deep Research
 
-The Code Expert Agent extends ChunkHound's semantic and regex search capabilities into a complete architectural analysis tool. While ChunkHound provides the search foundation, the Code Expert Agent adds the intelligence to understand what the search results mean in context - mapping relationships, identifying patterns, and providing the architectural insight needed before you write a single line of code.
+**Traditional search:** "Find validateEmail"
+**Deep Research:** "Understand all validation patterns, find existing email validators AND their written context, map their usage, identify the preferred approach with reasoning"
 
-## What It Provides
+The Code Expert Agent performs Deep Research across code and files - an iterative, comprehensive analysis that:
+1. Starts with your intent
+2. Discovers semantically related code AND files
+3. Maps architectural relationships across implementation and design
+4. Identifies existing solutions with their written context
+5. Synthesizes actionable insights from the complete engineering story
 
-The Code Expert leverages ChunkHound's powerful search tools—including [multi-hop semantic search](/under-the-hood/#multi-hop-semantic-search) and regex pattern matching—to understand your codebase architecture. Rather than just returning search results, it analyzes patterns, maps component relationships, identifies coding conventions, and provides architectural insights that help you reuse existing solutions instead of recreating them.
+## Why Deep Research Changes Everything
 
-## When to Use It
+**Without understanding your complete context, AI creates:**
+- Generic code that doesn't match your team's patterns
+- Duplicate implementations of existing solutions
+- Changes that break architectural consistency
+- Features that conflict with written specifications
+- Security vulnerabilities from missed context
+
+**Code Expert performs deep research first** - understanding your coding style, existing solutions, architectural patterns, design specifications, and security requirements before suggesting any changes.
+
+## What Code Deep Research Provides
+
+### Stop Reinventing the Wheel
+Your team has already solved most problems. The challenge is finding those solutions. Code Deep Research discovers existing implementations, patterns, and conventions - preventing duplicate code and maintaining consistency.
+
+### Understand Before You Code
+- **Map the architecture** before making changes
+- **Trace dependencies** to avoid breaking changes
+- **Learn conventions** from existing patterns
+- **Find examples** of similar implementations
+
+### Scale AI Without Losing Context
+- **Focused retrieval**: Only relevant code, not entire files
+- **Semantic understanding**: "authentication" finds login(), validateUser(), checkCredentials()
+- **Multi-hop discovery**: Follow code relationships to complete understanding
+- **Enterprise scale**: Millions of lines, millisecond responses
+
+The Code Expert leverages ChunkHound's powerful search tools—including [multi-hop semantic search](/under-the-hood/#multi-hop-semantic-search) and regex pattern matching—to provide this deep understanding rather than just returning search results.
+
+## Code Deep Research in Action
+
+### Example: "Add authentication to new API endpoint"
+
+**Without Deep Research:**
+❌ AI creates new auth middleware
+❌ Duplicates existing JWT validation
+❌ Inconsistent with team patterns
+❌ Misses role-based permissions
+
+**With Code Expert Deep Research:**
+✅ Discovers existing `AuthMiddleware` in middleware/
+✅ Maps usage patterns across endpoints
+✅ Identifies JWT + role validation approach
+✅ Finds configuration in `config/auth.yaml`
+✅ Locates permission decorator examples
+✅ **Result:** Consistent, secure implementation
+
+### Example: "Debug payment processing failure"
+
+**Deep Research Process:**
+1. **Initial**: Finds `PaymentProcessor` class
+2. **Hop 1**: Discovers `StripeHandler`, `PayPalHandler`
+3. **Hop 2**: Maps to `PaymentQueue`, `RetryPolicy`
+4. **Hop 3**: Traces to `WebhookValidator`, `AuditLogger`
+5. **Hop 4**: Connects to `NotificationService`
+6. **Result**: Complete payment flow architecture mapped
+
+## When to Use Code Deep Research
 
 <CardGrid>
-  <Card title="New Feature Implementation" icon="rocket">
-    Before adding features - find existing patterns to follow
+  <Card title="Before Adding Features" icon="rocket">
+    Find existing patterns and reusable components first
   </Card>
 
   <Card title="Complex Bug Investigation" icon="magnifier">
-    When bugs span multiple modules - map connections first
+    Map all connected components and data flows
   </Card>
 
-  <Card title="Refactoring Legacy Code" icon="puzzle">
-    Before restructuring - understand dependencies and risks
+  <Card title="Large Refactoring" icon="puzzle">
+    Understand all dependencies and usage patterns
   </Card>
 
-  <Card title="Codebase Onboarding" icon="open-book">
-    New codebase? Get architectural overview, don't guess
+  <Card title="New Codebase Onboarding" icon="open-book">
+    Get architectural overview and coding conventions
+  </Card>
+
+  <Card title="Code Review Preparation" icon="approve-check">
+    Understand context around changes being made
+  </Card>
+
+  <Card title="Enterprise Migration" icon="setting">
+    Map legacy systems before modernization
   </Card>
 </CardGrid>
 
@@ -38,7 +108,7 @@ The Code Expert leverages ChunkHound's powerful search tools—including [multi-
 Before using the Code Expert Agent, you need ChunkHound set up and running:
 
 <Card title="First-Time Setup" icon="rocket">
-  **New to ChunkHound?** Start with the [Tutorial](/tutorial/) to install, configure, and index your first codebase.
+  **New to ChunkHound?** Start with the [Quickstart](/quickstart/) to install, configure, and index your first codebase.
 </Card>
 
 <Card title="Advanced Configuration" icon="setting">
@@ -46,12 +116,12 @@ Before using the Code Expert Agent, you need ChunkHound set up and running:
 </Card>
 
 <Card title="MCP Integration" icon="approve-check">
-  **IDE Setup Required** The agent works through [MCP (Model Context Protocol)](https://modelcontextprotocol.io/). Your AI assistant must be configured to connect to ChunkHound as described in the [Tutorial](/tutorial/#ide-setup).
+  **IDE Setup Required** The agent works through [MCP (Model Context Protocol)](https://modelcontextprotocol.io/). Your AI assistant must be configured to connect to ChunkHound as described in the [Quickstart](/quickstart/#connect-to-your-ai-assistant).
 </Card>
 
-## How to Use It
+## How to Enable Code Deep Research
 
-### 1. Create the Agent File
+### 1. Create the Code Expert Agent
 
 Create a markdown file `.claude/agents/code-expert.md` with the following content:
 
@@ -59,7 +129,7 @@ Create a markdown file `.claude/agents/code-expert.md` with the following conten
 ---
 name: Code Expert
 
-description: Use this a **READ ONLY** agent (**CAN'T WRITE TO FILES**) that when you need to understand the architecture, structure, and design patterns of a codebase before coding. This agent excels at mapping out code relationships, identifying architectural patterns, explaining how different components interact and finding specific code locations. Examples: <example>Context: User needs to add a new feature. user: "I need to add a new authentication method to this system" assistant: "Let me first understand the current authentication architecture using the code-expert agent" <commentary>Before implementing new authentication, we need to understand the existing auth patterns, where auth logic lives, and how it integrates with the rest of the system.</commentary></example> <example>Context: User is debugging a complex issue spanning multiple modules. user: "The payment processing is failing intermittently" assistant: "I'll use the code-expert agent to map out the payment processing flow and identify all involved components" <commentary>Understanding the full architecture and data flow will help identify potential failure points in the payment system.</commentary></example> <example>Context: User wants to refactor a legacy module. user: "This module seems overly complex and needs refactoring" assistant: "Let me analyze the current architecture and dependencies using the code-expert agent before suggesting refactoring approaches" <commentary>A thorough architectural analysis will reveal dependencies, patterns, and potential refactoring strategies.</commentary></example>
+description: Use this **READ ONLY** agent (**CAN'T WRITE TO FILES**) to perform Code Deep Research - iterative, comprehensive analysis that discovers existing solutions, maps architectural relationships, and identifies patterns before coding. This agent prevents duplicate implementations by finding what already exists and understanding how it fits in your codebase. Examples: <example>Context: User needs to add a new feature. user: "I need to add authentication to this new endpoint" assistant: "Let me perform code deep research to understand our existing authentication architecture first" <commentary>Before creating new auth code, we need to discover existing auth middleware, understand current patterns, and find reusable components.</commentary></example> <example>Context: User is debugging a complex issue. user: "Payment processing is failing intermittently" assistant: "I'll use code deep research to map the complete payment flow and identify all connected components" <commentary>Deep research will trace from payment entry through processing, validation, storage, and notification to understand the full architecture.</commentary></example> <example>Context: User wants to refactor code. user: "This validation logic is scattered everywhere" assistant: "Let me research all validation patterns in the codebase before we refactor" <commentary>Code deep research will find all validators, identify patterns, map dependencies, and suggest consolidation opportunities.</commentary></example>
 
 tools: Glob, Grep, LS, ExitPlanMode, Read, TodoWrite, mcp__ChunkHound__get_stats, mcp__ChunkHound__health_check, mcp__ChunkHound__search_semantic, mcp__ChunkHound__search_regex
 
@@ -195,40 +265,81 @@ Remember: Your analysis should give developers a mental model of the system that
 `````
 
 <Aside type="tip" title="Agent Tools">
-The Code Expert Agent uses ChunkHound's MCP tools (`mcp__ChunkHound__search_semantic`, `mcp__ChunkHound__search_regex`) for its analysis. If these tools aren't available, check your [MCP configuration](/tutorial/#ide-setup) and ensure ChunkHound is running as an MCP server.
+The Code Expert Agent uses ChunkHound's MCP tools (`mcp__ChunkHound__search_semantic`, `mcp__ChunkHound__search_regex`) for its analysis. If these tools aren't available, check your [MCP configuration](/quickstart/#connect-to-your-ai-assistant) and ensure ChunkHound is running as an MCP server.
 </Aside>
 
-### 2. Ask Before You Code
+### 2. Perform Code Deep Research
 
-Once ChunkHound is [indexed](/tutorial/#example-initial-index) and your MCP server is running, simply ask about your codebase before implementing:
+Once ChunkHound is [indexed](/quickstart/#index-your-codebase) and your MCP server is running, ask the Code Expert to research before you implement:
 
+**Instead of:**
 ```
-"Use the code expert, explain how the multi hop semantic search algorithm works and how it's implemented"
+"Add rate limiting to the API"
 ```
 
-The orchestrator will then send the Code Expert to work, with a prompt similar to the following:
-
+**Do this first:**
 ```
-I need you to understand and explain how the multi-hop semantic search algorithm works in this ChunkHound codebase.
-Please:
+"Use the code expert to research our current rate limiting approach,
+find existing middleware, and understand the configuration patterns
+before I implement rate limiting for the new endpoint"
+```
 
-1. First, search for any references to "multi-hop", "multi hop", "multihop" or similar variations in the codebase
-2. Look for the main implementation of semantic search functionality
-3. Identify the algorithm's key components and data flow
-4. Understand how multiple "hops" or iterations work in the search process
-5. Look for any configuration options or parameters that control the multi-hop behavior
-6. Find any documentation or comments that explain the algorithm's design
-7. Trace through the code to understand the complete execution flow
+**This triggers deep research that:**
+- Maps existing rate limiting architecture
+- Identifies reusable components
+- Documents configuration patterns
+- Provides implementation guidance
 
-Focus on understanding:
-- What makes it "multi-hop" vs single-hop search
-- How results from one hop influence the next hop
-- How the algorithm decides when to stop hopping
-- What optimizations or special techniques are used
-- How embeddings and similarity scores are used across hops
+### 3. Code Deep Research Example
 
-Please provide a comprehensive explanation of how this algorithm works, including the key implementation details and code
-locations.)
+When you ask the Code Expert to research rate limiting, it performs iterative discovery:
+
+**Step 1: Initial Discovery**
+- Searches for "rate limit", "throttle", "quota"
+- Finds `RateLimitMiddleware` in `src/middleware/`
+- Discovers configuration files
+
+**Step 2: Architectural Mapping**
+- Maps middleware usage across endpoints
+- Identifies Redis-based storage approach
+- Traces to configuration and monitoring
+
+**Step 3: Pattern Analysis**
+- Documents team conventions
+- Finds similar implementations
+- Identifies reusable components
+
+**Step 4: Implementation Guidance**
+- Provides specific file locations
+- Shows configuration examples
+- Suggests consistent approach
+
+### 4. The Result: Deep Understanding
+
+Instead of creating duplicate code, you get actionable insights like:
+
+```markdown
+## Rate Limiting Architecture Analysis
+
+### Existing Implementation
+- **Core**: `RateLimitMiddleware` (src/middleware/auth.ts:45-120)
+- **Storage**: Redis-based with `ioredis` client
+- **Config**: Environment-based limits in `config/limits.yaml`
+
+### Usage Patterns
+- Applied to 12 API endpoints
+- Per-user and per-IP limiting
+- Sliding window algorithm
+- Custom headers for limit status
+
+### Recommended Approach
+Reuse existing middleware with endpoint-specific configuration:
+```typescript
+app.use('/api/new-endpoint', rateLimiter({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100 // limit each IP to 100 requests per windowMs
+}));
+```
 ```
 
 <details>
