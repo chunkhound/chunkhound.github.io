@@ -1,0 +1,265 @@
+---
+title: Quickstart
+description: Install and configure ChunkHound in 5 minutes
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+import { Card, CardGrid, Aside } from '@astrojs/starlight/components';
+
+Get ChunkHound running in 5 minutes. This guide will take you from installation to your first semantic search.
+
+## Prerequisites
+
+Before installing ChunkHound, ensure you have:
+
+- **Python 3.10+** - Check with `python --version`
+- **[uv package manager](https://docs.astral.sh/uv/)** - Modern Python package manager (recommended)
+
+<Aside type="tip" title="Why uv?">
+uv is significantly faster than pip and handles virtual environments automatically. It's the recommended way to install Python tools.
+</Aside>
+
+## Installation
+
+### Step 1: Install uv (if you don't have it)
+
+<Tabs syncKey="uv-install">
+  <TabItem label="macOS and Linux">
+    ```bash
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    ```
+  </TabItem>
+
+  <TabItem label="Windows">
+    ```powershell
+    powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+    ```
+  </TabItem>
+</Tabs>
+
+### Step 2: Install ChunkHound
+
+```bash
+uv tool install chunkhound
+```
+
+That's it! ChunkHound is now available as a global command.
+
+### Verify Installation
+
+```bash
+chunkhound --version
+# Should show: chunkhound x.x.x
+```
+
+## Configuration
+
+Choose your embedding provider, then let ChunkHound's **interactive setup wizard** handle the configuration.
+
+<Tabs syncKey="provider-setup">
+  <TabItem label="VoyageAI (Recommended)">
+    **Best choice** for most users - fastest, most accurate, and cost-effective.
+
+    **Setup steps:**
+    1. Get an API key from [VoyageAI Console](https://dash.voyageai.com/)
+    2. Set environment variable (optional): `export VOYAGE_API_KEY="pa-your-key"`
+    3. Run `chunkhound index` - the wizard will detect your key or prompt for it
+
+    The setup wizard will automatically configure VoyageAI and test the connection.
+  </TabItem>
+
+  <TabItem label="OpenAI">
+    **Good choice** if you already have OpenAI credits or prefer their ecosystem.
+
+    **Setup steps:**
+    1. Get an API key from [OpenAI Platform](https://platform.openai.com/api-keys)
+    2. Set environment variable (optional): `export OPENAI_API_KEY="sk-your-key"`
+    3. Run `chunkhound index` - the wizard will detect your key or prompt for it
+
+    The setup wizard will help you choose between `text-embedding-3-large` (quality) or `text-embedding-3-small` (speed).
+  </TabItem>
+
+  <TabItem label="Ollama (Local/Offline)">
+    **Best results** - [Qwen3 embedding](https://ollama.com/dengcao/Qwen3-Embedding-8B) and [reranker](https://ollama.com/dengcao/Qwen3-Reranker-4B) models outperform all other providers if you have the hardware to run them.
+
+    **Setup steps:**
+    1. Install and start Ollama:
+    ```bash
+    # Install Ollama (see https://ollama.ai/)
+    # Pull the best embedding and reranker models
+    ollama pull dengcao/Qwen3-Embedding-8B:Q5_K_M
+    ollama pull dengcao/Qwen3-Reranker-4B:Q5_K_M
+    ollama serve  # Keep this running
+    ```
+
+    2. Run `chunkhound index` - the wizard will auto-detect Ollama and available models
+
+    The setup wizard will automatically configure the embedding model. The reranker model enhances search accuracy when used with a compatible reranking service.
+  </TabItem>
+</Tabs>
+
+<details>
+<summary><strong>Advanced: Custom Configuration</strong></summary>
+
+For CI/CD pipelines, custom providers, or when the setup wizard doesn't detect your configuration, create a `.chunkhound.json` file manually:
+
+<Tabs syncKey="provider-config">
+  <TabItem label="VoyageAI">
+    ```json
+    {
+      "embedding": {
+        "provider": "voyageai",
+        "api_key": "pa-your-voyage-key"
+      }
+    }
+    ```
+  </TabItem>
+
+  <TabItem label="OpenAI">
+    ```json
+    {
+      "embedding": {
+        "provider": "openai",
+        "api_key": "sk-your-openai-key"
+      }
+    }
+    ```
+  </TabItem>
+
+  <TabItem label="Ollama">
+    ```json
+    {
+      "embedding": {
+        "provider": "openai",
+        "base_url": "http://localhost:11434/v1",
+        "model": "dengcao/Qwen3-Embedding-8B:Q5_K_M",
+        "api_key": "dummy-key",
+        "rerank_model": "dengcao/Qwen3-Reranker-4B:Q5_K_M",
+        "rerank_url": "http://localhost:8000/rerank"
+      }
+    }
+    ```
+
+    Note: Reranking requires a separate service (like vLLM) running the reranker model.
+  </TabItem>
+</Tabs>
+
+</details>
+
+
+## Index Your Codebase
+
+Navigate to your project and create the searchable index:
+
+```bash
+cd /path/to/your/project
+chunkhound index
+```
+
+You'll see output like:
+```
+Scanning 3,847 files...
+Processing 2,983 Python files, 864 JavaScript files...
+✓ 62,419 chunks indexed
+✓ Embeddings: 62,419 generated
+⏱️  Time: 8m 42s
+```
+
+<CardGrid>
+  <Card title="Respects .gitignore" icon="approve-check">
+    ChunkHound automatically ignores files in your `.gitignore`
+  </Card>
+
+  <Card title="Incremental Updates" icon="rocket">
+    Re-running `chunkhound index` only processes changed files
+  </Card>
+
+  <Card title="22+ Languages" icon="translate">
+    Supports Python, JavaScript, TypeScript, Go, Rust, Java, C++, and more
+  </Card>
+</CardGrid>
+
+## Connect to Your AI Assistant
+
+Configure ChunkHound as an MCP server so your AI assistant can search your code:
+
+<Tabs syncKey="ide-setup">
+  <TabItem label="Claude Code">
+    **Easiest setup** - Claude Code handles everything automatically:
+
+    ```bash
+    # Run this in your project directory
+    claude mcp add ChunkHound chunkhound mcp
+    ```
+
+    That's it! Your AI assistant can now search your codebase.
+  </TabItem>
+
+  <TabItem label="VS Code (Continue)">
+    Add to `.vscode/mcp.json` in your project:
+
+    ```json
+    {
+      "servers": {
+        "chunkhound": {
+          "type": "stdio",
+          "command": "chunkhound",
+          "args": ["mcp", "/path/to/your/project"]
+        }
+      }
+    }
+    ```
+  </TabItem>
+
+  <TabItem label="Cursor">
+    Add to `.cursor/mcp.json` in your project:
+
+    ```json
+    {
+      "mcpServers": {
+        "chunkhound": {
+          "command": "chunkhound",
+          "args": ["mcp", "/path/to/your/project"]
+        }
+      }
+    }
+    ```
+  </TabItem>
+</Tabs>
+
+## Test Your Setup
+
+### Quick Verification
+
+Try asking your AI assistant:
+
+> "Can you search for any authentication functions in this codebase?"
+
+Or:
+
+> "Find all the database models and show me their relationships"
+
+If ChunkHound is working, your AI will be able to find and understand your code patterns instantly.
+
+### Manual Testing (Optional)
+
+You can also test ChunkHound directly from the command line:
+
+```bash
+chunkhound search "class.*Authentication"
+
+chunkhound search "user login and password validation"
+```
+
+## You're Ready!
+
+🎉 ChunkHound is now connected to your AI assistant. Your AI can:
+
+- **Find existing code** before writing new functions
+- **Understand your architecture** before making changes
+- **Follow your patterns** and coding style
+- **Cross-reference** code with documentation
+
+<Aside type="tip" title="Having Issues?">
+Join our [Discord community](https://discord.gg/BAepHEXXnX) for help, or check [GitHub Issues](https://github.com/chunkhound/chunkhound/issues) to report bugs. The community is active and helpful!
+</Aside>

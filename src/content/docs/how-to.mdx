@@ -1,16 +1,12 @@
 ---
-title: ChunkHound Tutorial
-description: Learn ChunkHound in 5 minutes - from installation to advanced search
+title: How-To Guides
+description: Master ChunkHound's indexing strategies, server modes, and production deployment
 ---
 
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 import { Card, CardGrid, Aside } from '@astrojs/starlight/components';
 
-## Understanding ChunkHound
-
-ChunkHound transforms your codebase into a searchable knowledge base for AI assistants. It provides two powerful search methods:
-- **Semantic search** - Natural language queries that understand meaning and context
-- **Regex search** - Precise pattern matching for exact code structures
+Once you've got ChunkHound [up and running](/quickstart/), it's time to dive deeper. This guide covers advanced indexing strategies, server deployment, and optimization for large codebases.
 
 ## The Index Command - Your Knowledge Base
 
@@ -36,7 +32,7 @@ For large codebases, indexing is a separate step that provides significant benef
 
   <Card title="Enterprise Ready" icon="approve-check">
     **Battle-tested scaling**
-    Used on codebases with 75k+ LOC
+    Used on codebases with millions of LOC
   </Card>
 </CardGrid>
 
@@ -48,7 +44,7 @@ Scanning 10,000 files...
 Processing 8,234 Python files, 1,766 TypeScript files...
 ✓ 45,000 chunks indexed
 ✓ Embeddings: 45,000 generated
-⏱️  Time: 34m 30s
+⏱️  Time: 7m 30s
 ```
 
 ### Example: Incremental Update
@@ -56,9 +52,9 @@ Processing 8,234 Python files, 1,766 TypeScript files...
 ```bash
 $ chunkhound index  # After editing 3 files
 Detecting changes...
-✓ 3 files modified, 8,234 files unchanged
+✓ 3 files modified, 9,997 files unchanged
 ✓ 150 chunks updated
-✓ Embeddings: 150 generated, 45,000 reused
+✓ Embeddings: 150 generated, 44,850 reused
 ⏱️  Time: 18 seconds
 ```
 
@@ -105,25 +101,25 @@ chunkhound mcp /path/to/project --http --port 8000
 **Quick rule**: Use stdio for personal work, HTTP for everything else.
 </Aside>
 
-## Production Usage
+## Production Deployment
 
-ChunkHound is production-ready and actively tested. For detailed configuration options, see the [Configuration Guide](/configuration/):
+ChunkHound is production-ready and actively tested on codebases with 200,000+ lines of code. Here's how to deploy it effectively:
 
 <CardGrid>
-  <Card title="Enterprise Scale" icon="star">
-    **75k+ LOC indexed**
+  <Card title="Scale & Performance" icon="star">
+    **4.8M lines in 56 minutes**
 
-    Proven on massive monorepos with complex dependency graphs
+    Proven performance on massive codebases with minimal CPU overhead
   </Card>
 
-  <Card title="Real-World Testing" icon="laptop">
-    **Enterprise Validated**
+  <Card title="Project Diversity" icon="laptop">
+    **Battle-tested across architectures**
 
-    Tested on multiple enterprise projects and [GoatDB's](https://goatdb.dev) TypeScript codebase. See [Configuration](/configuration/) for production setup.
+    From [GoatDB's](https://goatdb.dev) TypeScript monolith to [Kubernetes'](https://github.com/kubernetes/kubernetes) multi-language ecosystem
   </Card>
 
   <Card title="Multi-Language Support" icon="translate">
-    **20+ Languages**
+    **22+ Languages**
 
     Python, TypeScript, Go, Rust, Java, C++, and more via [Tree-sitter](https://tree-sitter.github.io/tree-sitter/)
   </Card>
@@ -135,13 +131,27 @@ ChunkHound is production-ready and actively tested. For detailed configuration o
   </Card>
 </CardGrid>
 
-## Next Steps
+### Real-World Performance
 
-Now that you understand ChunkHound's core concepts:
+We indexed the entire Kubernetes codebase - 4.8 million lines across 23,000 files.
+Here's what happened on a MacBook Pro M4:
 
-1. **Start using it** - Index your codebase and connect your AI assistant
-2. **[Advanced configuration](/configuration/)** - Advanced configuration options
-3. **[Technical deep dive](/under-the-hood/)** - Understand the architecture
+**56 minutes. That's it.**
+
+But here's the surprising part: ChunkHound barely broke a sweat. CPU usage stayed at 47%
+the entire time. Your laptop wasn't struggling - it was waiting. Waiting for the embedding
+API to process each chunk and send it back.
+
+This tells you something important about scaling ChunkHound: the bottleneck isn't your
+hardware, it's your embedding provider.
+
+**Want it faster?**
+- **Local models** eliminate the network round-trip entirely
+- **On-premise servers** give you control over throughput
+- **Smaller indexes** for daily work - index just the modules you're actively developing
+
+The Kubernetes test proves ChunkHound can handle anything you throw at it. But most days,
+you won't need to index millions of lines. Start with what you're working on, expand as needed.
 
 <Aside type="note" title="Questions or Issues?">
 ChunkHound is actively developed. Report issues or ask questions on [GitHub](https://github.com/chunkhound/chunkhound/issues).

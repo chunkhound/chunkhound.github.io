@@ -31,7 +31,8 @@ export default defineConfig({
         },
       ],
       sidebar: [
-        { label: "Tutorial", slug: "tutorial" },
+        { label: "Quickstart", slug: "quickstart" },
+        { label: "How-To Guides", slug: "how-to" },
         { label: "Configuration", slug: "configuration" },
         { label: "Code Expert Agent", slug: "code-expert-agent" },
         { label: "Under the Hood", slug: "under-the-hood" },
