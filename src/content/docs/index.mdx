@@ -1,169 +1,47 @@
 ---
 title: ChunkHound
-description: Semantic and regex search for codebases via MCP
+description: Deep Research for Code & Files - understand architecture, find existing solutions, scale AI coding
 hero:
   title: ""
-  tagline: Modern RAG for your codebase - Semantic and Regex Search via MCP
+  tagline: Deep Research for Code & Files
   image:
     light: ../../assets/wordmark.svg
     dark: ../../assets/wordmark-dark.svg
     alt: ChunkHound Logo
 ---
 
-import { Tabs, TabItem } from '@astrojs/starlight/components';
 import LatestChanges from '../../components/LatestChanges.tsx';
+import { Aside } from '@astrojs/starlight/components';
 
-## What it does
+Transform AI coding assistants from guessing to knowing. ChunkHound enables deep, iterative exploration that understands your complete engineering context - code, architecture, patterns, and written knowledge.
 
-LLMs like Claude and GPT don't know your codebase - they only know what they were trained on. Every time they help you code, they need to search your files to understand your project's specific patterns and terminology.
+## The Reality
 
-ChunkHound integrates with AI assistants via the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) to give them two ways to explore your code:
-- **Semantic search** - Finds code by meaning, so when the AI looks for "user authentication" it also finds your `validateLogin()` and `checkCredentials()` functions
-- **Regex search** - Pattern matching for precise code structures
+Your AI assistant helps you code but lacks critical context:
+**Missing code context** • **Duplicate functions** • **Breaking patterns** • **Lost architecture** • **Conflicting specs** • **Scale overwhelm**
 
-Traditional search was built for humans who know what they're looking for. But AI assistants start with zero knowledge about your codebase. Semantic search bridges this gap by understanding that "database timeout" and "SQL connection lost" are related concepts, even though they share no keywords.
+**ChunkHound gives AI the context it needs** - deep understanding of your code, files, and architectural decisions before writing anything.
 
-## Supported Languages
+## What is Deep Research for Code & Files?
 
-ChunkHound supports **22 languages** with structured parsing:
+Just like Deep Research transforms how you explore the web, ChunkHound and the [Code Expert](/code-expert-agent) brings Deep Research to your local codebase and files. **Search across 22+ file types** including Python, JavaScript, TypeScript, Markdown, PDFs, and more.
 
-- **Programming** (via [Tree-sitter](https://tree-sitter.github.io/tree-sitter/)): Python, JavaScript, TypeScript, JSX, TSX, Java, Kotlin, Groovy, C, C++, C#, Go, Rust, Bash, MATLAB, Makefile
-- **Configuration** (via Tree-sitter): JSON, YAML, TOML, Markdown
-- **Text-based** (custom parsers): Text files, PDF
+- **Iterative Discovery** - Start with a concept, expand through code, markdown files, and comments
+- **Multi-hop Search** - Find connections between implementation and written knowledge
+- **Architecture Map** - Understand relationships across code files, README files, and design notes
+- **Complete Context** - Find that `validateEmail()` AND the markdown file explaining why it exists
 
-## Requirements
+## Production Ready
 
-- Python 3.10+
-- [uv package manager](https://docs.astral.sh/uv/)
-- API key for semantic search (optional)
+**Battle-tested at scale:**
+- Handles codebases from thousands to **millions of lines**
+- **22** programming languages with full parsing support
+- **5 minutes** from installation to first search
+- **Zero** cloud dependencies - runs entirely local
 
-## Installation
+Built on proven foundations:<br />
+[Tree-sitter](https://tree-sitter.github.io/tree-sitter/) for parsing • [DuckDB](https://duckdb.org/) for local storage • [MCP](https://modelcontextprotocol.io/) for AI integration
 
-```bash
-# Install uv package manager
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Install ChunkHound
-uv tool install chunkhound
-```
-
-## Configuration
-
-ChunkHound works **without configuration** for regex search. For semantic search, create `.chunkhound.json` in your project root:
-
-<Tabs syncKey="provider">
-  <TabItem label="VoyageAI">
-    **Recommended:** Fastest, most accurate, and cost effective
-
-    ```json
-    {
-      "embedding": {
-        "provider": "voyageai",
-        "api_key": "pa-your-voyage-key"
-      }
-    }
-    ```
-
-    Get API key from [VoyageAI Console](https://dash.voyageai.com/) | [Documentation](https://docs.voyageai.com/docs/embeddings)
-  </TabItem>
-
-  <TabItem label="OpenAI">
-    **Best for:** Wide compatibility and ecosystem
-
-    ```json
-    {
-      "embedding": {
-        "provider": "openai",
-        "api_key": "sk-your-openai-key"
-      }
-    }
-    ```
-
-    Get API key from [OpenAI Platform](https://platform.openai.com/api-keys) | [Embeddings Guide](https://platform.openai.com/docs/guides/embeddings)
-  </TabItem>
-
-  <TabItem label="Local">
-    **Best for:** Privacy and offline use
-
-    ```bash
-    # Start Ollama with embedding model
-    ollama pull nomic-embed-text
-    ```
-
-    [Ollama Documentation](https://ollama.ai/) | [API Reference](https://github.com/ollama/ollama/blob/main/docs/api.md)
-
-    ```json
-    {
-      "embedding": {
-        "provider": "openai",
-        "base_url": "http://localhost:11434/v1",
-        "model": "nomic-embed-text"
-      }
-    }
-    ```
-
-    No API key required - completely local. Works with any OpenAI compatible endpoint.
-  </TabItem>
-</Tabs>
-
-## IDE Setup
-
-Configure ChunkHound as an MCP server in your AI assistant:
-
-<Tabs syncKey="ide-setup">
-  <TabItem label="Claude Code">
-    Inside the project directory run:
-    ```bash
-    claude mcp add ChunkHound chunkhound mcp
-    ```
-  </TabItem>
-
-  <TabItem label="VS Code">
-    Add to `.vscode/mcp.json`:
-    ```json
-    {
-      "servers": {
-        "chunkhound": {
-          "type": "stdio",
-          "command": "chunkhound",
-          "args": ["mcp", "/path/to/project"]
-        }
-      }
-    }
-    ```
-  </TabItem>
-
-  <TabItem label="Cursor">
-    Add to `.cursor/mcp.json`:
-    ```json
-    {
-      "mcpServers": {
-        "chunkhound": {
-          "command": "chunkhound",
-          "args": ["mcp", "/path/to/project"]
-        }
-      }
-    }
-    ```
-  </TabItem>
-</Tabs>
-
-## Initial Indexing
-
-```bash
-# Index your codebase (respects .gitignore automatically)
-cd /path/to/project && chunkhound index
-```
+**Stop recreating code. Start with deep understanding.**
 
 <LatestChanges />
-
-## Documentation
-
-- [Tutorial](/tutorial/) - Learn ChunkHound in 5 minutes
-- [Configuration](/configuration/) - Complete configuration reference
-- [Under the Hood](/under-the-hood/) - Technical deep dive into [cAST algorithm](https://arxiv.org/pdf/2506.15655) and architecture
-
-## Links
-
-- [GitHub Repository](https://github.com/chunkhound/chunkhound)
-- [Report Issues](https://github.com/chunkhound/chunkhound/issues)
