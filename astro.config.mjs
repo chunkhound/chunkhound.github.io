@@ -35,6 +35,7 @@ export default defineConfig({
         { label: "How-To Guides", slug: "how-to" },
         { label: "Configuration", slug: "configuration" },
         { label: "Code Expert Agent", slug: "code-expert-agent" },
+        { label: "Benchmark", slug: "benchmark" },
         { label: "Under the Hood", slug: "under-the-hood" },
         { label: "Origin Story", slug: "origin-story" },
         { label: "Contributing", slug: "contributing" },

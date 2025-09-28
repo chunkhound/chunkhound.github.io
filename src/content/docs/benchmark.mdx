@@ -1,0 +1,159 @@
+---
+title: Benchmark
+description: Independent evaluation on the Kubernetes codebase (4.8M LOC) shows ChunkHound improves Claude Code performance in 3 out of 4 complex code analysis tasks
+---
+
+import { Card, CardGrid, Aside } from '@astrojs/starlight/components';
+
+We ran a small preliminary test to compare Claude Code with and without ChunkHound on complex code analysis tasks. We used the Kubernetes codebase (4.8M lines) and tested four architectural analysis scenarios.
+
+In three out of four tests, three independent AI evaluators unanimously preferred the ChunkHound-enhanced responses. One test went to standard Claude Code.
+
+This was a limited evaluation—four tests, one codebase, AI evaluators only. The results suggest ChunkHound may help with complex architectural analysis, but more testing is needed to understand when and why.
+
+<Aside type="note" title="Independent Evaluation">
+This benchmark was conducted independently with ChunkHound developers having no influence over the evaluation process or criteria. All evaluations were performed by LLM systems using identical assessment prompts.
+</Aside>
+
+
+## Test Setup
+
+**Codebase**: Kubernetes (4.8M lines of code)
+
+**Systems tested**:
+- Claude Code + ChunkHound with semantic search and Code Expert Agent
+- Claude Code with standard capabilities
+
+**Method**: Each system received identical prompts. The ChunkHound version included "Use the code expert" instruction; the standard version used "Write the results to a markdown file."
+
+**Evaluation**: Three AI systems (GPT-5 Thinking, Gemini 2.5 Pro, Claude Opus 4.1) evaluated responses using this prompt:
+
+```text title="Evaluation Prompt"
+You are a core developer in the k8s team. Critically and carefully
+review the attached responses for the task above. Choose which response
+best meets the requirements.
+```
+
+## Results
+
+### Test 1: kubectl Command Flow Analysis
+
+**Task**:
+```text title="Test 1 Prompt"
+Given a user runs `kubectl apply -f deployment.yaml`, trace the complete code path from the kubectl command to pods running on nodes. Identify all the major components involved, the key functions called in each component, and the data structures passed between them. Explain how the Deployment controller, ReplicaSet controller, and Scheduler coordinate to achieve the desired state.
+Write the result to a markdown file
+```
+
+**ChunkHound response**: Referenced specific function names, traced calls between kubectl client logic, API server admission controllers, deployment controller reconciliation, and kubelet pod lifecycle. Included implementation details and data structures.
+
+**Standard Claude response**: Provided architectural overview with general component descriptions but without specific function names or implementation details.
+
+**Result**: All three evaluators chose ChunkHound.
+
+**Full responses**: [ChunkHound](/benchmark-responses/test1-chunkhound/) | [Standard Claude](/benchmark-responses/test1-standard/)
+
+### Test 2: Deployment Controller Analysis
+
+**Task**:
+```text title="Test 2 Prompt"
+Examine the Deployment controller implementation and explain:
+- How it implements the controller-runtime pattern
+- The difference between its reconcile loop and the ReplicaSet controller's loop
+- How it handles conflicts between multiple concurrent reconciliations
+- Why certain operations use strategic merge patches vs. three-way merges
+- How the controller handles orphaned ReplicaSets during rollbacks
+
+Identify any potential race conditions and explain how they're prevented.
+Write the result to a markdown file
+```
+
+**ChunkHound response**: Identified controller-runtime patterns in the codebase, explained strategic merge patch implementation differences, pointed to specific race condition handling code, mapped state transitions during rollbacks.
+
+**Standard Claude response**: Discussed controller concepts accurately but without specific code locations or implementation details.
+
+**Result**: All three evaluators chose ChunkHound.
+
+**Full responses**: [ChunkHound](/benchmark-responses/test2-chunkhound/) | [Standard Claude](/benchmark-responses/test2-standard/)
+
+### Test 3: etcd Node Failure Scenario
+
+**Task**:
+```text title="Test 3 Prompt"
+Scenario: An etcd node becomes unresponsive, causing 30% packet loss. Predict and explain:
+- Which Kubernetes components will be affected first and why
+- How the leader election mechanisms will respond
+- What happens to in-flight requests in the API server
+- How this impacts different workload types (StatefulSets vs Deployments vs DaemonSets)
+- Which recovery mechanisms will activate and in what order
+
+Bonus: Explain how the issue manifests differently if it's a network partition vs. actual node failure.
+Write the results to a markdown file
+```
+
+**ChunkHound response**: Found specific timeout values, retry mechanisms, and fallback strategies in the code. Traced packet loss propagation through system components, identified circuit breaker implementations, described recovery sequence orchestration.
+
+**Standard Claude response**: Provided theoretical knowledge about distributed systems failures without specific Kubernetes implementation details.
+
+**Result**: All three evaluators chose ChunkHound.
+
+**Full responses**: [ChunkHound](/benchmark-responses/test3-chunkhound/) | [Standard Claude](/benchmark-responses/test3-standard/)
+
+### Test 4: NetworkPolicy Enforcement
+
+**Task**:
+```text title="Test 4 Prompt"
+Explain how a NetworkPolicy object transforms into actual iptables rules on nodes. Trace the code path through:
+- The NetworkPolicy controller
+- CNI plugin integration (specifically Calico or Cilium patterns)
+- Kube-proxy's role (or lack thereof)
+- Node-level enforcement mechanisms
+
+Describe how this differs between different CNI implementations and why.
+Write the results to a markdown file.
+```
+
+**ChunkHound response**: Comprehensive technical analysis with extensive CNI implementation details and codebase evidence.
+
+**Standard Claude response**: Well-structured, comprehensive analysis with clear organization and focused technical explanations.
+
+**Result**: All three evaluators chose Standard Claude.
+
+**Full responses**: [ChunkHound](/benchmark-responses/test4-chunkhound/) | [Standard Claude](/benchmark-responses/test4-standard/)
+
+## Limitations
+
+**Small sample**: Four tests on one codebase. Results may not apply to other codebases, programming languages, or types of tasks.
+
+**AI evaluators only**: Human developers might prefer different response styles. AI evaluators may systematically favor longer, more detailed responses.
+
+**Complex tasks only**: We tested sophisticated architectural analysis. Simple coding tasks might show different patterns.
+
+**Single domain**: Kubernetes is a complex distributed system. Web applications, mobile apps, or embedded systems might yield different results.
+
+## Observations
+
+**Unanimous decisions**: All four tests resulted in unanimous evaluator agreement, suggesting clear response quality differences rather than close calls.
+
+**Pattern in responses**: ChunkHound responses included specific function names, code locations, and implementation details. Standard Claude responses provided general architectural knowledge without specific implementation references.
+
+**Outlier result**: Test 4 showed that comprehensive analysis isn't always preferred. Sometimes focused, direct responses are rated higher.
+
+## Test Configuration
+
+**ChunkHound setup**: Semantic search with embeddings, multi-hop search, Code Expert Agent, full Kubernetes codebase indexing (4.8M LOC).
+
+**Why Kubernetes**: Large, complex codebase with intricate component relationships. Chosen to test scenarios where comprehensive understanding might provide advantages.
+
+**Task types**: End-to-end flow tracing, controller implementation analysis, distributed systems failure prediction.
+
+## Technical Details
+
+**Hardware**: MacBook Pro 2024 M4, 24GB RAM
+
+**Database**: 88GB ChunkHound database for full Kubernetes codebase
+
+**Embedding provider**: VoyageAI (voyage-3.5 embeddings + rerank-2.5)
+
+**Cost**: Completed within VoyageAI free tier ($0)
+
+**Indexing performance**: 57 minutes to index 4.8M lines of code, 47% CPU load (limited by network latency and model performance, not CPU)
