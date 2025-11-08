@@ -260,6 +260,34 @@ chunkhound search "user login and password validation"
 - **Follow your patterns** and coding style
 - **Cross-reference** code with documentation
 
+### Next Steps: Enable Code Research (Optional)
+
+Want even deeper insights? ChunkHound's **Code Research** feature provides comprehensive architectural analysis by exploring your codebase semantically.
+
+<Aside type="tip" title="FREE for Claude Code CLI Users">
+If you're using Claude Code CLI or Codex CLI, you can enable Code Research at **no additional cost** using your existing subscription. Just add one line to your config!
+</Aside>
+
+**What Code Research adds:**
+- **Map complete flows** - "How does authentication work?" → comprehensive report with all components
+- **Find architectural patterns** - Discover rate limiting, caching, error handling strategies
+- **Prevent duplicate work** - Find existing implementations before building new ones
+
+**Quick setup:**
+- **Claude Code CLI or Codex CLI** - FREE with your existing subscription (recommended)
+- **OpenAI or Ollama** - Alternative options for users without CLI subscriptions
+
+See the [Code Research Setup](/code-research#setup-configuration) guide for detailed configuration instructions.
+
+**Quick example**:
+```bash
+# After LLM configuration
+chunkhound research "how does rate limiting work?"
+```
+
+Or via your AI assistant:
+> "Research our rate limiting implementation"
+
 <Aside type="tip" title="Having Issues?">
 Join our [Discord community](https://discord.gg/BAepHEXXnX) for help, or check [GitHub Issues](https://github.com/chunkhound/chunkhound/issues) to report bugs. The community is active and helpful!
 </Aside>

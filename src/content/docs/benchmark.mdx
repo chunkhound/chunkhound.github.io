@@ -21,10 +21,10 @@ This benchmark was conducted independently with ChunkHound developers having no 
 **Codebase**: Kubernetes (4.8M lines of code)
 
 **Systems tested**:
-- Claude Code + ChunkHound with semantic search and Code Expert Agent
+- Claude Code + ChunkHound with semantic search and the Code Research tool
 - Claude Code with standard capabilities
 
-**Method**: Each system received identical prompts. The ChunkHound version included "Use the code expert" instruction; the standard version used "Write the results to a markdown file."
+**Method**: Each system received identical prompts. The ChunkHound version included "Use code research" instruction; the standard version used "Write the results to a markdown file."
 
 **Evaluation**: Three AI systems (GPT-5 Thinking, Gemini 2.5 Pro, Claude Opus 4.1) evaluated responses using this prompt:
 
@@ -140,7 +140,7 @@ Write the results to a markdown file.
 
 ## Test Configuration
 
-**ChunkHound setup**: Semantic search with embeddings, multi-hop search, Code Expert Agent, full Kubernetes codebase indexing (4.8M LOC).
+**ChunkHound setup**: Semantic search with embeddings, multi-hop search, Code Research tool, full Kubernetes codebase indexing (4.8M LOC).
 
 **Why Kubernetes**: Large, complex codebase with intricate component relationships. Chosen to test scenarios where comprehensive understanding might provide advantages.
 
