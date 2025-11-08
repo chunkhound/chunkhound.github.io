@@ -218,6 +218,235 @@ ChunkHound automatically respects `.gitignore` files and includes comprehensive 
 - `--include PATTERN` - Add include pattern (can be used multiple times)
 - `--exclude PATTERN` - Add exclude pattern (can be used multiple times)
 
+## LLM Configuration (Code Research)
+
+Code research features require LLM provider configuration. ChunkHound uses a **dual-provider architecture** where you can optimize costs by using different models for different operations:
+
+- **Utility Provider** - Fast operations: query expansion, follow-up generation, classification
+- **Synthesis Provider** - Deep analysis: final synthesis with large context windows
+
+<Aside type="tip" title="Recommended: Leverage Your Existing Subscription">
+Claude Code CLI and Codex CLI users can use code research at no additional cost beyond their existing subscription.
+</Aside>
+
+<Tabs syncKey="llm-provider-config">
+  <TabItem label="Claude Code CLI">
+    **Best for**: Claude Code users - uses your existing subscription
+
+    [Claude Code CLI Documentation](https://docs.anthropic.com/claude/docs/claude-code)
+
+    ```json
+    {
+      "llm": {
+        "provider": "claude-code-cli"
+      }
+    }
+    ```
+
+    **Default Model**:
+    - `claude-haiku-4-5-20251001` - Used for both utility and synthesis
+
+    **Benefits**:
+    - No API key required - uses your CLI subscription authentication
+    - No additional API costs
+    - Seamless integration with Claude Code workflow
+
+    **Environment Variable**:
+    ```bash
+    export CHUNKHOUND_LLM_PROVIDER=claude-code-cli
+    ```
+  </TabItem>
+
+  <TabItem label="Codex CLI">
+    **Best for**: Codex CLI users - uses your existing subscription
+
+    ```json
+    {
+      "llm": {
+        "provider": "codex-cli",
+        "codex_reasoning_effort": "medium"
+      }
+    }
+    ```
+
+    **Reasoning Effort Configuration**:
+
+    Control the depth of reasoning for different operations:
+
+    | Level | Speed | Cost | Best For |
+    |-------|-------|------|----------|
+    | `minimal` | Fastest | Lowest | Quick queries, simple tasks |
+    | `low` | Fast | Low | Standard exploration, utility operations |
+    | `medium` | Moderate | Medium | Balanced performance (default) |
+    | `high` | Slower | Higher | Complex synthesis, deep analysis |
+
+    **Per-role optimization**:
+    ```json
+    {
+      "llm": {
+        "provider": "codex-cli",
+        "codex_reasoning_effort_utility": "low",
+        "codex_reasoning_effort_synthesis": "high"
+      }
+    }
+    ```
+
+    This uses fast reasoning for exploration and deep reasoning for final synthesis.
+
+    **Benefits**:
+    - Uses your existing Codex subscription
+    - Configurable reasoning depth per operation
+    - No additional API costs
+
+    **Environment Variables**:
+    ```bash
+    export CHUNKHOUND_LLM_PROVIDER=codex-cli
+    export CHUNKHOUND_LLM_CODEX_REASONING_EFFORT=medium
+    export CHUNKHOUND_LLM_CODEX_REASONING_EFFORT_UTILITY=low
+    export CHUNKHOUND_LLM_CODEX_REASONING_EFFORT_SYNTHESIS=high
+    ```
+  </TabItem>
+
+  <TabItem label="OpenAI">
+    **Best for**: Users without Claude Code or Codex subscriptions
+
+    [OpenAI Platform](https://platform.openai.com/) | [API Documentation](https://platform.openai.com/docs/api-reference)
+
+    ```json
+    {
+      "llm": {
+        "provider": "openai",
+        "api_key": "sk-your-openai-key",
+        "utility_model": "gpt-5-nano",
+        "synthesis_model": "gpt-5"
+      }
+    }
+    ```
+
+    **Available Models**:
+    - `gpt-5-nano` - Cost-optimized, fast (60 tokens, recommended for utility)
+    - `gpt-5` - Full reasoning capability (recommended for synthesis)
+    - `gpt-4` - Previous generation, still capable
+
+    **Note:** Requires pay-per-use API credits.
+
+    **Environment Variables**:
+    ```bash
+    export CHUNKHOUND_LLM_PROVIDER=openai
+    export CHUNKHOUND_LLM_API_KEY=sk-your-key
+    export CHUNKHOUND_LLM_UTILITY_MODEL=gpt-5-nano
+    export CHUNKHOUND_LLM_SYNTHESIS_MODEL=gpt-5
+    ```
+  </TabItem>
+
+  <TabItem label="Ollama (Local)">
+    **Best for**: Privacy, offline usage, custom/local model deployment
+
+    [Ollama Documentation](https://ollama.ai/) | [Model Library](https://ollama.ai/library)
+
+    ```json
+    {
+      "llm": {
+        "provider": "ollama",
+        "base_url": "http://localhost:11434/v1",
+        "utility_model": "llama3.2",
+        "synthesis_model": "llama3.2"
+      }
+    }
+    ```
+
+    **Popular Models**:
+    - `llama3.2` - Balanced performance (default)
+    - `mistral` - Alternative general-purpose model
+    - `codellama` - Code-specialized model
+
+    No API key required for local Ollama deployment.
+
+    **Environment Variables**:
+    ```bash
+    export CHUNKHOUND_LLM_PROVIDER=ollama
+    export CHUNKHOUND_LLM_BASE_URL=http://localhost:11434/v1
+    ```
+  </TabItem>
+
+  <TabItem label="Mixed Providers">
+    **Best for**: Advanced users optimizing cost and performance per operation
+
+    **Example 1: Claude Code CLI utility + Codex CLI synthesis**
+    ```json
+    {
+      "llm": {
+        "utility_provider": "claude-code-cli",
+        "synthesis_provider": "codex-cli",
+        "codex_reasoning_effort_synthesis": "high"
+      }
+    }
+    ```
+    Fast Claude Haiku for exploration, deep Codex reasoning for final synthesis.
+
+    **Example 2: OpenAI utility + Codex CLI synthesis**
+    ```json
+    {
+      "llm": {
+        "utility_provider": "openai",
+        "synthesis_provider": "codex-cli",
+        "utility_model": "gpt-5-nano",
+        "api_key": "sk-your-openai-key",
+        "codex_reasoning_effort_synthesis": "high"
+      }
+    }
+    ```
+    Combines fast OpenAI models for utility with Codex for high-quality synthesis.
+
+    **Environment Variables**:
+    ```bash
+    export CHUNKHOUND_LLM_UTILITY_PROVIDER=claude-code-cli
+    export CHUNKHOUND_LLM_SYNTHESIS_PROVIDER=codex-cli
+    export CHUNKHOUND_LLM_CODEX_REASONING_EFFORT_SYNTHESIS=high
+    ```
+  </TabItem>
+</Tabs>
+
+### LLM Configuration Options
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `provider` | `string` | None | Default LLM provider: `"claude-code-cli"`, `"codex-cli"`, `"openai"`, `"ollama"` |
+| `utility_provider` | `string` | `provider` | Override provider for utility operations |
+| `synthesis_provider` | `string` | `provider` | Override provider for synthesis operations |
+| `utility_model` | `string` | Provider default | Model name for utility operations |
+| `synthesis_model` | `string` | Provider default | Model name for synthesis operations |
+| `api_key` | `string` | None | API key for authentication (not required for CLI/Ollama providers) |
+| `base_url` | `string` | Provider default | Custom API base URL (for Ollama or custom endpoints) |
+| `codex_reasoning_effort` | `string` | `"medium"` | Codex CLI reasoning level: `"minimal"`, `"low"`, `"medium"`, `"high"` |
+| `codex_reasoning_effort_utility` | `string` | `codex_reasoning_effort` | Override reasoning effort for utility operations |
+| `codex_reasoning_effort_synthesis` | `string` | `codex_reasoning_effort` | Override reasoning effort for synthesis operations |
+| `timeout` | `number` | `60` | Request timeout in seconds |
+| `max_retries` | `number` | `3` | Number of retry attempts |
+
+### Default Models by Provider
+
+| Provider | Utility Model | Synthesis Model | Requires API Key |
+|----------|---------------|-----------------|------------------|
+| Claude Code CLI | `claude-haiku-4-5-20251001` | `claude-haiku-4-5-20251001` | No (uses subscription) |
+| Codex CLI | `codex` | `codex` | No (uses subscription) |
+| OpenAI | `gpt-5-nano` | `gpt-5` | Yes |
+| Ollama | `llama3.2` | `llama3.2` | No (local) |
+
+**Environment Variables**:
+- `CHUNKHOUND_LLM_PROVIDER` - Default LLM provider
+- `CHUNKHOUND_LLM_UTILITY_PROVIDER` - Utility provider override
+- `CHUNKHOUND_LLM_SYNTHESIS_PROVIDER` - Synthesis provider override
+- `CHUNKHOUND_LLM_UTILITY_MODEL` - Utility model name
+- `CHUNKHOUND_LLM_SYNTHESIS_MODEL` - Synthesis model name
+- `CHUNKHOUND_LLM_API_KEY` - Provider API key
+- `CHUNKHOUND_LLM_BASE_URL` - Custom API base URL
+- `CHUNKHOUND_LLM_CODEX_REASONING_EFFORT` - Global reasoning effort
+- `CHUNKHOUND_LLM_CODEX_REASONING_EFFORT_UTILITY` - Utility reasoning effort
+- `CHUNKHOUND_LLM_CODEX_REASONING_EFFORT_SYNTHESIS` - Synthesis reasoning effort
+- `CHUNKHOUND_LLM_TIMEOUT` - Request timeout (seconds)
+- `CHUNKHOUND_LLM_MAX_RETRIES` - Retry attempts
+
 ## MCP Server Configuration
 
 MCP transport mode is controlled via CLI arguments when starting the server, not through configuration files.
