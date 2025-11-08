@@ -1,0 +1,305 @@
+---
+title: Code Research
+description: Deep research for your codebase - comprehensive architectural understanding, not just search results
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+## Architectural Understanding, Not Just Search Results
+
+Ask: "How does authentication work?"
+
+Don't get a list of files containing "auth." Get a comprehensive report mapping auth components, relationships, security patterns, and configuration—with `file.ts:45` citations.
+
+Code Research performs breadth-first exploration of your codebase's semantic graph, following connections between components and synthesizing findings into structured markdown reports.
+
+---
+
+## Upgrading from v3 (Code Expert Agent)
+
+If you previously configured the "Code Expert Agent" in `.claude/agents/code-expert.md`:
+
+### What Changed
+- **No longer needed** - Code Research is now a built-in MCP tool, not a separate agent
+- **LLM configuration now required** - Code Research needs LLM provider configuration for synthesis and analysis
+- **Same functionality** - Deep architectural research works the same way, just integrated directly into ChunkHound
+
+### Migration Steps
+
+**1. Add LLM configuration to `.chunkhound.json`:**
+
+```json
+{
+  "llm": {
+    "provider": "claude-code-cli"
+  }
+}
+```
+
+**2. Remove the old agent file:**
+
+```bash
+rm .claude/agents/code-expert.md
+```
+
+**3. Restart your MCP server:**
+
+```bash
+# Stop current server (Ctrl+C if running in terminal)
+# Restart ChunkHound MCP server
+chunkhound mcp
+```
+
+**4. Verify it works:**
+
+Ask your AI assistant: "Research the authentication implementation"
+
+You should see Code Research tool invocation instead of agent delegation.
+
+### Will Both Run Simultaneously?
+
+No. The old agent file is ignored once removed. If you keep both, Claude Code may try to use the agent instead of the built-in tool. **Remove the agent file** to ensure clean migration.
+
+### What Breaks Without Migration?
+
+Code Research features won't work without LLM configuration. However:
+
+<Aside type="note">
+**Core ChunkHound features still work without LLM configuration** - semantic search, regex search, and multi-hop search require only your embedding provider. Code Research specifically adds LLM-powered architectural synthesis on top of these search capabilities.
+</Aside>
+
+---
+
+## When to Use It
+
+- **Before implementing features** - Find existing patterns to reuse instead of reinventing
+- **During debugging** - Map complete flows to find the actual failure point
+- **Refactoring prep** - Understand all dependencies before making changes
+- **Code archaeology** - Learn unfamiliar systems quickly
+
+---
+
+## Usage
+
+**Via CLI:**
+```bash
+chunkhound research "how does rate limiting work?"
+```
+
+**Via MCP (with your AI assistant):**
+```
+"Research our rate limiting implementation"
+```
+
+### What You Get
+
+Code Research returns a structured markdown report with architectural insights and precise file citations. Here's what a typical report looks like:
+
+<details>
+<summary><strong>Example: Rate Limiting Research Output</strong></summary>
+
+````markdown
+## Rate Limiting Architecture
+
+### Overview
+The application implements token bucket rate limiting using Redis for distributed state.
+Rate limiting is applied at the middleware layer with per-endpoint configuration.
+
+### Core Components
+
+**RateLimitMiddleware** (`src/middleware/ratelimit.ts:45-120`)
+- Token bucket algorithm with sliding window
+- Redis-based distributed counters
+- Custom headers for limit status
+- Applied to 12 API endpoints
+
+**Configuration** (`config/limits.yaml:1-30`)
+- Per-endpoint rate definitions
+- Default: 100 requests per 15-minute window
+- Environment-based overrides supported
+
+### Usage Pattern
+
+Found across these endpoints:
+- `POST /api/auth/login` - 5 requests/min (src/routes/auth.ts:23)
+- `POST /api/users/create` - 10 requests/min (src/routes/users.ts:45)
+- `GET /api/data/*` - 100 requests/min (src/routes/data.ts:67)
+
+### Implementation Recommendation
+
+Reuse existing middleware for new endpoints:
+
+```typescript
+app.use('/api/new-endpoint', rateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 100
+}));
+```
+
+### Key Files
+- `src/middleware/ratelimit.ts` - Core implementation
+- `src/services/redis.ts:89-145` - Redis client
+- `config/limits.yaml` - Configuration
+- `tests/middleware/ratelimit.test.ts` - Test examples
+````
+
+</details>
+
+**Parameters:**
+- `query` (required) - Your research question
+
+The report includes:
+- Architectural overview and design patterns
+- Component locations with `file.ts:line` citations
+- Usage examples from your codebase
+- Implementation recommendations
+
+---
+
+## Setup & Configuration
+
+Code Research requires an LLM provider for intelligent synthesis and query expansion. ChunkHound uses a **dual-provider architecture**:
+
+- **Utility Provider** - Fast operations: query expansion, follow-up generation
+- **Synthesis Provider** - Deep analysis: final synthesis with large context windows
+
+<Aside type="tip" title="Recommended: Use Your Existing Subscription">
+Claude Code CLI and Codex CLI users can use Code Research at no additional cost beyond their existing subscription.
+</Aside>
+
+**Quick setup examples:**
+
+```json
+// Claude Code CLI (recommended for Claude Code users)
+{
+  "llm": {
+    "provider": "claude-code-cli"
+  }
+}
+
+// Codex CLI (recommended for Codex users)
+{
+  "llm": {
+    "provider": "codex-cli",
+    "codex_reasoning_effort": "medium"
+  }
+}
+
+// OpenAI (for users without CLI subscriptions)
+{
+  "llm": {
+    "provider": "openai",
+    "api_key": "sk-your-key"
+  }
+}
+```
+
+For complete setup instructions including environment variables, mixed providers, and all configuration options, see the [LLM Configuration](/configuration#llm-configuration-code-research) section of the Configuration guide.
+
+---
+
+## How It Works
+
+Code Research is a specialized sub-agent system optimized for code understanding. Unlike simple semantic search that returns matching chunks, it performs **breadth-first exploration** of your codebase's semantic graph, following connections and understanding architectural relationships.
+
+The system combines:
+- **Multi-hop semantic search**: Starting from your query, it expands outward through semantic relationships, exploring connected components
+- **Hybrid semantic + symbol search**: Discovers conceptually relevant code, then finds all exact symbol references for comprehensive coverage
+- **Intelligent synthesis**: Generates structured markdown reports with architectural insights and precise `file:line` citations
+
+Token budgets scale with repository size (30k-150k input tokens), and the system automatically allocates resources based on what it discovers.
+
+For deep implementation details, see the [Advanced: Technical Deep Dive](#advanced-technical-deep-dive) section below or the [Under the Hood](/under-the-hood/) documentation.
+
+---
+
+## Advanced: Technical Deep Dive
+
+<Aside type="tip" title="For architects and implementers">
+This section provides detailed technical implementation for those interested in how Code Research achieves Graph RAG-style exploration without building explicit graphs.
+</Aside>
+
+### Multi-Hop BFS Traversal
+
+Starting from your query, the system expands outward through semantic relationships:
+
+```
+Query: "authentication error handling"
+
+Level 0: Direct matches
+  → auth_error_handler()
+  → validate_credentials()
+
+Level 1: Connected components (semantic neighbors)
+  → error_logger() (shares error handling patterns)
+  → token_validator() (shares auth validation logic)
+
+Level 2: Architectural relationships
+  → database_retry() (error logger uses it)
+  → session_cleanup() (token validator calls it)
+```
+
+At each level, an LLM generates **context-aware follow-up questions** to explore promising directions, turning semantic search into **guided exploration** of architectural connections.
+
+### Graph RAG Without the Graph
+
+Traditional Graph RAG systems build explicit knowledge graphs—extracting entities, mining relationships, and storing them in graph databases. ChunkHound achieves the same **multi-hop exploration** and **relationship-aware retrieval** without any graph construction, leveraging the semantic structure already captured during the cAST chunking pass.
+
+#### Virtual Graph Through cAST
+
+The cAST (context-aware AST) chunking algorithm doesn't just split code into pieces—it creates a **virtual graph structure** where:
+
+- **Nodes**: Semantic chunks enriched with metadata (function names, class hierarchies, parameter lists, import paths)
+- **Edges**: Vector similarity + structural relationships (file proximity, AST nesting, import dependencies, symbol references)
+- **Traversal**: Multi-hop semantic search explores the vector space like a breadth-first graph walk
+
+Because cAST preserves AST relationships during chunking (which functions call what, which classes inherit from where, which modules import others), the chunks already encode the code's architectural graph—**no separate extraction needed**. This virtual graph approach scales efficiently to multi-million LOC repositories without the computational overhead and maintenance burden of explicit graph structures, which become increasingly expensive at scale.
+
+#### Hybrid Semantic + Symbol Search
+
+After each semantic search finds conceptually relevant chunks, the system extracts symbols (function names, class names, parameter names) and runs **parallel regex searches** to find every occurrence of those symbols across the codebase.
+
+This hybrid approach combines:
+- **Semantic search**: Discovers what's conceptually relevant (understanding)
+- **Regex search**: Finds all exact symbol references (precision)
+
+The results are unified through simple deduplication by chunk ID. Semantic results retain their reranked relevance scores from the multi-hop search phase, while regex results add new chunks containing exact symbol matches that weren't discovered semantically. This gives you comprehensive coverage: the semantic "why this matters" plus the regex "everywhere this appears." Since regex is a local database operation, this adds **zero API costs** while providing more complete results.
+
+#### Why This Works
+
+Graph RAG's benefits come from following relationships between connected information. ChunkHound achieves this dynamically:
+
+1. **No upfront cost**: No entity extraction, no graph construction, no graph maintenance
+2. **Query-adaptive**: Relationships discovered on-demand based on what each specific query needs
+3. **Language-agnostic**: Works across all 24+ supported languages through universal AST patterns
+4. **Precise + conceptual**: Combines semantic understanding with exact symbol matching
+5. **Scales automatically**: Token budgets and traversal adapt to repository size
+
+The result: Graph RAG's architectural understanding and multi-hop discovery, achieved through the semantic knowledge already embedded in your cAST-parsed codebase.
+
+### Adaptive Scaling
+
+Token budgets scale with repository size (30k-150k input tokens) and traversal depth (shallow→deep). The system automatically allocates resources based on what it's discovering.
+
+### Intelligent Synthesis
+
+Small result sets use **single-pass synthesis** (one LLM call). Large result sets trigger **map-reduce synthesis** (cluster chunks, synthesize clusters, combine summaries). Output is always a structured markdown report with architectural insights and `file.ts:45` citations.
+
+### Quality Filtering Before Synthesis
+
+Code research doesn't blindly pass all collected chunks to synthesis. After BFS exploration completes, the system performs a **final reranking pass** against your original query to filter for quality and relevance:
+
+1. **File-level reranking**: All discovered files are reranked using the reranker model against your original question
+2. **Token budget allocation**: Files are prioritized by relevance score, and only the highest-scoring files fit within the synthesis token budget
+3. **Chunk filtering**: Only chunks from budgeted files make it to the final synthesis
+
+This implements a classic **precision-recall tradeoff**—cast a wide net during exploration (maximize recall), then filter for quality before synthesis (maximize precision). Low-relevance findings are excluded, ensuring the LLM synthesizes only the most pertinent architectural insights.
+
+### Map-Reduce Synthesis with Clustering
+
+When filtered results exceed single-LLM context limits (>150k tokens for large repositories), the system uses **token-bounded K-means clustering** to prevent context collapse. Files are partitioned into clusters of max 30k tokens each, synthesized in parallel with cluster-local citations [1][2][3], then deterministically remapped to global numbers before the reduce phase combines summaries.
+
+This avoids **progressive compression loss** from iterative summarization chains (summary → summary-of-summary). Each cluster synthesizes once with full context, preserving architectural details while enabling arbitrary scaling. Cluster-local citation namespaces enable maximum parallelism—no coordination needed during map phase. The reduce LLM integrates remapped summaries with explicit instructions to preserve citations (not generate new ones), ensuring every [N] traces to actual source files.
+
+Result: 10KB repos use single-pass synthesis (k=1), 1M+ LOC repos automatically scale to map-reduce (k=5+) without context collapse or citation hallucination.

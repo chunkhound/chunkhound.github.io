@@ -7,6 +7,9 @@ import react from "@astrojs/react";
 export default defineConfig({
   site: "https://chunkhound.github.io",
   base: "/",
+  redirects: {
+    "/code-expert-agent": "/code-research",
+  },
   integrations: [
     react(),
     starlight({
@@ -34,7 +37,7 @@ export default defineConfig({
         { label: "Quickstart", slug: "quickstart" },
         { label: "How-To Guides", slug: "how-to" },
         { label: "Configuration", slug: "configuration" },
-        { label: "Code Expert Agent", slug: "code-expert-agent" },
+        { label: "Code Research", slug: "code-research" },
         { label: "Benchmark", slug: "benchmark" },
         { label: "Under the Hood", slug: "under-the-hood" },
         { label: "Origin Story", slug: "origin-story" },
