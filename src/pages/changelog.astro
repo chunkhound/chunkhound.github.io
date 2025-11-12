@@ -10,6 +10,7 @@ const sortedVersions = versions.sort((a, b) => {
   return b.data.version.localeCompare(a.data.version, undefined, { numeric: true });
 });
 
+const v4Versions = sortedVersions.filter(v => v.data.version.startsWith('4.'));
 const v3Versions = sortedVersions.filter(v => v.data.version.startsWith('3.'));
 const v2Versions = sortedVersions.filter(v => v.data.version.startsWith('2.'));
 const v1Versions = sortedVersions.filter(v => v.data.version.startsWith('1.'));
@@ -31,7 +32,7 @@ const v1Versions = sortedVersions.filter(v => v.data.version.startsWith('1.'));
 </div>
 <ChangelogStats versions={sortedVersions} client:load />
 
-{v3Versions.map(version => (
+{v4Versions.map(version => (
   <VersionCard
     client:load
     version={version.data.version}
@@ -40,6 +41,21 @@ const v1Versions = sortedVersions.filter(v => v.data.version.startsWith('1.'));
     isBreaking={version.data.isBreaking}
   />
 ))}
+
+{v3Versions.length > 0 && (
+  <details>
+    <summary><strong>Version 3.x Series ({v3Versions.length} versions)</strong></summary>
+    {v3Versions.map(version => (
+      <VersionCard
+        client:load
+        version={version.data.version}
+        date={version.data.date || ''}
+        changes={version.data.changes}
+        isBreaking={version.data.isBreaking}
+      />
+    ))}
+  </details>
+)}
 
 {v2Versions.length > 0 && (
   <details>
