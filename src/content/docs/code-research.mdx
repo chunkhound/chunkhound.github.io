@@ -78,6 +78,14 @@ Code Research features won't work without LLM configuration. However:
 - **Refactoring prep** - Understand all dependencies before making changes
 - **Code archaeology** - Learn unfamiliar systems quickly
 
+## When to Use Direct Search Instead
+
+Code Research is designed for architectural exploration. For simpler queries, use the base search tools directly:
+
+- **Quick symbol lookups** - Use regex search to find all occurrences of a specific function or class name
+- **Known file/function** - Use semantic search when you know roughly what you're looking for
+- **Architectural questions** - Use Code Research to understand how components interact and why
+
 ---
 
 ## Usage
@@ -244,17 +252,34 @@ At each level, an LLM generates **context-aware follow-up questions** to explore
 
 ### Graph RAG Without the Graph
 
-Traditional Graph RAG systems build explicit knowledge graphs—extracting entities, mining relationships, and storing them in graph databases. ChunkHound achieves the same **multi-hop exploration** and **relationship-aware retrieval** without any graph construction, leveraging the semantic structure already captured during the cAST chunking pass.
+Traditional Graph RAG systems build explicit knowledge graphs—extracting entities, mining relationships, and storing them in graph databases. Code Research **approximates graph-like exploration** through orchestration, trading explicit relationship modeling for zero upfront cost and automatic scaling.
 
-#### Virtual Graph Through cAST
+#### How Orchestration Creates a Virtual Graph
 
-The cAST (context-aware AST) chunking algorithm doesn't just split code into pieces—it creates a **virtual graph structure** where:
+ChunkHound's base layer (cAST index + semantic/regex search) provides traditional RAG capabilities. The Code Research sub-agent orchestrates these tools to create Graph RAG behavior:
 
-- **Nodes**: Semantic chunks enriched with metadata (function names, class hierarchies, parameter lists, import paths)
-- **Edges**: Vector similarity + structural relationships (file proximity, AST nesting, import dependencies, symbol references)
-- **Traversal**: Multi-hop semantic search explores the vector space like a breadth-first graph walk
+**Base Layer Foundation:**
+- **Chunks as nodes**: cAST chunking preserves metadata (function names, class hierarchies, parameters, imports)
+- **Vector similarity as edges**: Semantic search finds conceptually related chunks via HNSW index
+- **Symbol references as edges**: Regex search finds all exact symbol occurrences
 
-Because cAST preserves AST relationships during chunking (which functions call what, which classes inherit from where, which modules import others), the chunks already encode the code's architectural graph—**no separate extraction needed**. This virtual graph approach scales efficiently to multi-million LOC repositories without the computational overhead and maintenance burden of explicit graph structures, which become increasingly expensive at scale.
+**Orchestration Layer Creates the Graph:**
+- **BFS traversal**: Iteratively calls semantic search, starting from initial results and expanding through related chunks
+- **Query expansion**: Generates multiple semantic entry points, exploring different "neighborhoods" in parallel
+- **Symbol extraction + regex**: Pulls symbols from semantic results, triggers parallel regex to find all references
+- **Follow-up questions**: Creates targeted queries based on discovered code, recursively exploring architectural boundaries
+- **Convergence detection**: Monitors score degradation to prevent infinite traversal
+
+Because cAST chunks preserve semantic boundaries, multi-hop expansion follows meaningful architectural connections rather than arbitrary text proximity. This structural awareness is why orchestration can approximate graph traversal—the base chunks already encode relationships that orchestration discovers through iterative search.
+
+The virtual graph emerges through **orchestrated tool use**, not pre-computed storage:
+- Initial semantic search → discovers conceptually relevant chunks
+- Multi-hop expansion → follows vector similarity "edges" through BFS
+- Symbol extraction → identifies key entities from high-relevance results
+- Regex search → finds all references, completing the "graph" of connections
+- Follow-ups → explores architectural relationships discovered in results
+
+This approach scales efficiently to multi-million LOC repositories because there's no explicit graph to maintain—the "graph" is the pattern of orchestrated search calls, adapted dynamically to each query's needs.
 
 #### Hybrid Semantic + Symbol Search
 
@@ -268,15 +293,18 @@ The results are unified through simple deduplication by chunk ID. Semantic resul
 
 #### Why This Works
 
-Graph RAG's benefits come from following relationships between connected information. ChunkHound achieves this dynamically:
+Traditional semantic search finds conceptually similar code but misses architectural relationships. Knowledge graphs model these relationships explicitly but require expensive upfront extraction and ongoing maintenance.
 
-1. **No upfront cost**: No entity extraction, no graph construction, no graph maintenance
-2. **Query-adaptive**: Relationships discovered on-demand based on what each specific query needs
-3. **Language-agnostic**: Works across all 29 supported file types through universal AST patterns
-4. **Precise + conceptual**: Combines semantic understanding with exact symbol matching
-5. **Scales automatically**: Token budgets and traversal adapt to repository size
+Code Research combines base search capabilities (semantic + regex) with intelligent orchestration:
 
-The result: Graph RAG's architectural understanding and multi-hop discovery, achieved through the semantic knowledge already embedded in your cAST-parsed codebase.
+1. **Query expansion** - Multiple semantic entry points discover different code neighborhoods
+2. **Multi-hop exploration** - BFS through semantic neighborhoods following architectural connections
+3. **Symbol extraction + regex** - Comprehensive coverage beyond semantic discovery
+4. **Follow-up generation** - Context-aware questions explore architectural boundaries
+5. **Adaptive scaling** - Token budgets (30k-150k) scale with codebase size
+6. **Map-reduce synthesis** - Parallel cluster synthesis with deterministic citation remapping
+
+The virtual graph emerges through orchestrated tool use—no upfront construction, no separate storage, no synchronization overhead. Query-adaptive orchestration scales from quick searches to deep architectural exploration automatically.
 
 ### Adaptive Scaling
 

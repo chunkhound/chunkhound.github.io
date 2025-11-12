@@ -24,23 +24,62 @@ Your AI assistant helps you code but lacks critical context:
 
 ## What is Deep Research for Code & Files?
 
-Just like Deep Research transforms how you explore the web, ChunkHound with the [Code Research](/code-research) tool brings Deep Research to your local codebase and files. **Search across 29 file types** including Python, JavaScript, TypeScript, Markdown, PDFs, and more.
+Just like Deep Research transforms how you explore the web, ChunkHound's [Code Research](/code-research) tool brings iterative, multi-hop exploration to your local codebase. Code Research is a **specialized orchestration sub-agent** that uses ChunkHound's semantic and regex search tools strategically, exploring your codebase like an experienced engineer across **29 file types** including Python, JavaScript, TypeScript, Markdown, PDFs, and more.
 
-- **Iterative Discovery** - Start with a concept, expand through code, markdown files, and comments
-- **Multi-hop Search** - Find connections between implementation and written knowledge
-- **Architecture Map** - Understand relationships across code files, README files, and design notes
-- **Complete Context** - Find that `validateEmail()` AND the markdown file explaining why it exists
+## Why ChunkHound is Different
+
+**Two-Layer Architecture: Best of Both Worlds**
+
+ChunkHound provides both traditional RAG capabilities AND intelligent orchestration for deep exploration:
+
+### Base Layer: Enhanced RAG
+Like traditional RAG systems, ChunkHound maintains an index and provides search tools—but with critical improvements:
+- **[cAST chunking](/under-the-hood#the-cast-algorithm)**: Structure-aware code segmentation (4.3 point gain on retrieval benchmarks)
+- **Semantic search**: Natural language queries via HNSW vector indexing
+- **Regex search**: Exact pattern matching for comprehensive symbol coverage
+
+### Orchestration Layer: Code Research Sub-Agent
+The [Code Research](/code-research) tool is a specialized orchestration layer that uses base search tools strategically:
+- **Multi-hop exploration**: BFS traversal discovering architectural relationships
+- **Query expansion**: Multiple semantic entry points to cast wider nets
+- **Follow-up generation**: Iterative questioning based on discovered code
+- **Adaptive scaling**: Token budgets automatically scale from 30k-150k based on repository size
+- **Map-reduce synthesis**: Handles millions of lines without context collapse
+
+**The result**: Virtual Graph RAG behavior through orchestration, not explicit graph construction.
+
+**What this means for you:**
+- **Use what you need**: Direct semantic/regex search for quick lookups, Code Research for architectural exploration
+- **Zero upfront cost**: No entity extraction, no graph database to maintain
+- **Query-adaptive**: Simple questions get fast answers, complex questions trigger deep exploration automatically
+- **Scales to monorepos**: Orchestration layer adapts exploration depth and synthesis budgets to codebase size
+
+**Compare approaches:**
+
+| Approach | Base Capability | Orchestration | Monorepo Scale | Maintenance |
+|----------|----------------|---------------|----------------|-------------|
+| **Keyword Search** | Exact matching | None | ✓ Fast | None |
+| **Traditional RAG** | Semantic search | None | ✓ Scales | Re-index files |
+| **Knowledge Graphs** | Relationship queries | Pre-computed | ✗ Expensive | Continuous sync |
+| **ChunkHound** | Semantic + Regex | Code Research sub-agent | ✓ Automatic | Automatic (incremental + realtime) |
 
 ## Production Ready
 
-**Battle-tested at scale:**
-- Handles codebases from thousands to **millions of lines**
-- **29 languages and formats** with structured parsing (22 programming languages, 5 config formats, 2 document formats)
-- **5 minutes** from installation to first search
-- **Zero** cloud dependencies - runs entirely local
+**Battle-tested at monorepo scale:**
+- **Millions of lines** across multi-language codebases
+- **29 languages and formats** with AST-aware parsing (Python, TypeScript, Go, Rust, C++, Java, and more)
+- **5 minutes** from installation to first deep research query
+- **Zero** cloud dependencies - your code stays local, searches stay fast
+- **Automatic scaling** - token budgets and exploration depth adapt to repository size
+
+**Ideal for:**
+- **Large monorepos** with cross-team dependencies and circular references
+- **Multi-language projects** requiring consistent search across all code
+- **Security-sensitive codebases** that can't use cloud-based code search
+- **Offline development** environments or air-gapped systems
 
 Built on proven foundations:<br />
-[Tree-sitter](https://tree-sitter.github.io/tree-sitter/) for parsing • [DuckDB](https://duckdb.org/) for local storage • [MCP](https://modelcontextprotocol.io/) for AI integration
+[Tree-sitter](https://tree-sitter.github.io/tree-sitter/) for parsing • [DuckDB](https://duckdb.org/) for local vector search • [MCP](https://modelcontextprotocol.io/) for AI integration
 
 **Stop recreating code. Start with deep understanding.**
 

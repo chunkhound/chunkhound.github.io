@@ -36,6 +36,84 @@ ChunkHound uses a local-first architecture with embedded databases and universal
 
 ChunkHound's local-first architecture provides key advantages: **Privacy** - Your code never leaves your machine. **Speed** - No network latency or API rate limits. **Reliability** - Works offline and in air-gapped environments. **Cost** - No per-token charges for indexing large codebases.
 
+## Design Philosophy
+
+ChunkHound's architecture is built on a **two-layer design** optimized for large monorepos and multi-language codebases:
+
+### Layer 1: Enhanced RAG Foundation
+
+ChunkHound provides traditional RAG capabilities with critical improvements:
+
+**cAST Chunking (Base Parsing):**
+- Structure-aware code segmentation preserving AST relationships
+- Function signatures, class hierarchies, imports, nesting maintained
+- 4.3 point gain on retrieval benchmarks vs fixed-size chunking
+
+**Semantic Search (Base Tool):**
+- HNSW vector indexing for fast nearest-neighbor retrieval
+- Optional multi-hop expansion with reranking (when provider supports it)
+- Finds conceptually similar code across all 29 supported file types
+
+**Regex Search (Base Tool):**
+- Pattern matching against indexed content
+- Exact symbol reference discovery
+- Zero API costs (local database operation)
+
+These base capabilities work like traditional RAG systems—maintain an index, support semantic and regex queries—but with structure-aware chunking that preserves code meaning.
+
+### Layer 2: Code Research Orchestration
+
+The [Code Research](/code-research) tool is a specialized sub-agent that orchestrates base tools strategically:
+
+**1. Query Expansion (LLM-driven)**
+- Generates multiple semantic entry points
+- Explores different "neighborhoods" in parallel
+- Casts wider net before narrowing to high-relevance results
+
+**2. Multi-hop Exploration (Iterative tool use)**
+- Calls semantic search repeatedly, following BFS through related chunks
+- Each hop discovers new semantic neighborhoods
+- Reranking maintains focus on original query
+
+**3. Symbol Extraction + Regex (Hybrid approach)**
+- Pulls symbols from high-relevance semantic results
+- Triggers parallel regex searches for comprehensive coverage
+- Combines conceptual discovery (semantic) with exhaustive matching (regex)
+
+**4. Follow-up Generation (Recursive exploration)**
+- Creates context-aware questions based on discovered code
+- Explores architectural boundaries iteratively
+- Maintains ancestor chain for coherent traversal
+
+**5. Adaptive Scaling (Codebase-aware budgets)**
+- Token budgets scale 30k-150k based on repository size
+- [Convergence detection](#convergence-detection) prevents infinite loops
+- Map-reduce synthesis for large result sets
+
+**Performance Impact**: Virtual graph behavior through orchestration, not explicit graph construction. Zero upfront extraction cost, zero graph storage, zero synchronization overhead.
+
+**For monorepos specifically**: "How does auth work?" in a 10KB project triggers quick semantic search, while the same question in a 10M LOC monorepo automatically scales orchestration—deeper exploration, larger budgets, map-reduce synthesis—no manual tuning required.
+
+---
+
+## Comparison with Alternative Approaches
+
+| Dimension | Traditional RAG | Explicit Knowledge Graphs | Agentic Search | ChunkHound Base | ChunkHound + Code Research |
+|-----------|----------------|---------------------------|----------------|-----------------|---------------------------|
+| **Discovery depth** | Single-hop semantic | Multi-hop (follow edges) | Iterative exploration | Semantic + Regex | Orchestrated multi-hop BFS |
+| **Setup time** | Minutes (indexing) | Hours (extraction + build) | Minutes (indexing) | Minutes (indexing) | Minutes (indexing) |
+| **Maintenance** | Re-index files | Re-extract + sync graph | Re-index files | Re-index files | Re-index files |
+| **Monorepo scale** | ✓ Fast | ✗ Expensive (quadratic) | ✓ Depends on agent | ✓ Fast | ✓ Automatic scaling |
+| **Architecture understanding** | ✗ Limited | ✓ Explicit relationships | ✓ Through exploration | ~ Basic relationships | ✓ Virtual graph via orchestration |
+| **Query adaptation** | Fixed | Fixed | ✓ Adaptive | Fixed | ✓ Adaptive (budgets + convergence) |
+| **Language support** | Per-language tuning | Per-language extraction | Depends on tools | Universal (29 types) | Universal (29 types) |
+| **Relationship tracking** | None | Pre-computed | Tool-dependent | None | On-demand via orchestration |
+| **Synthesis** | None | None | LLM-dependent | None | Map-reduce with citations |
+
+**Key insight**: ChunkHound provides **both layers**—use base semantic/regex for quick queries, trigger Code Research orchestration for architectural exploration. Best of both worlds.
+
+---
+
 ## The cAST Algorithm
 
 When AI assistants search your codebase, they need code split into "chunks" - searchable pieces small enough to understand but large enough to be meaningful. The challenge: how do you split code without breaking its logic?
@@ -171,7 +249,12 @@ Multi-hop search implements several termination criteria to balance comprehensiv
 
 The system monitors three key signals for termination. First, it employs **rate-of-change monitoring** similar to early stopping in machine learning: when reranking scores degrade by more than 0.15 between iterations, indicating diminishing relevance returns. This derivative-based stopping criterion is common in optimization algorithms, effectively measuring the "convergence velocity" of score improvements. Second, it respects computational boundaries—both execution time (5 seconds maximum) and result volume (500 candidates maximum). Third, it detects resource exhaustion when fewer than 5 high-scoring candidates remain for productive expansion.
 
-This convergence detection creates a practical balance. The algorithm explores broadly enough to discover cross-domain relationships while terminating before semantic drift compromises result quality.
+**Monorepo-specific convergence behavior**: In large monorepos with circular dependencies and cross-cutting concerns, convergence detection prevents infinite loops. For example, searching for "logging" in a million-line codebase might discover:
+- Hop 1: Core logging modules (50 chunks)
+- Hop 2: Error handling that uses logging (200 chunks)
+- Hop 3: Business logic that uses error handling (1000+ chunks, but scores degrading)
+
+The gradient-based stopping recognizes when hop 3 adds volume without relevance, terminating before exploring every file that transitively imports logging. This creates a practical balance: the algorithm explores broadly enough to discover cross-domain relationships while terminating before semantic drift compromises result quality.
 
 <Aside type="tip" title="When Multi-Hop Activates">
 Multi-hop search automatically activates when you use providers with reranking support:
