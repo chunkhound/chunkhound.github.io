@@ -326,7 +326,13 @@ This implements a classic **precision-recall tradeoff**—cast a wide net during
 
 ### Map-Reduce Synthesis with Clustering
 
-When filtered results exceed single-LLM context limits (>150k tokens for large repositories), the system uses **token-bounded K-means clustering** to prevent context collapse. Files are partitioned into clusters of max 30k tokens each, synthesized in parallel with cluster-local citations [1][2][3], then deterministically remapped to global numbers before the reduce phase combines summaries.
+When semantic clustering produces multiple clusters from filtered results, the system uses **two-phase HDBSCAN clustering with map-reduce synthesis** to prevent context collapse:
+
+1. **Phase 1 (Natural Boundary Discovery)**: HDBSCAN (Hierarchical Density-Based Spatial Clustering) discovers natural semantic boundaries in the embedding space, grouping files where they are cohesively related rather than forcing arbitrary partitions. This respects the inherent structure of your codebase, identifying both semantically dense clusters and outliers that don't fit natural groupings.
+
+2. **Phase 2 (Token-Budget Grouping)**: Clusters are greedily merged based on centroid distance while respecting the 30k token limit per cluster, preserving semantic coherence during merging.
+
+Files are partitioned into token-bounded clusters, synthesized in parallel with cluster-local citations [1][2][3], then deterministically remapped to global numbers before the reduce phase combines summaries.
 
 This avoids **progressive compression loss** from iterative summarization chains (summary → summary-of-summary). Each cluster synthesizes once with full context, preserving architectural details while enabling arbitrary scaling. Cluster-local citation namespaces enable maximum parallelism—no coordination needed during map phase. The reduce LLM integrates remapped summaries with explicit instructions to preserve citations (not generate new ones), ensuring every [N] traces to actual source files.
 

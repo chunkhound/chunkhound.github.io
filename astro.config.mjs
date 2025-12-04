@@ -33,6 +33,52 @@ export default defineConfig({
           href: "https://github.com/chunkhound/chunkhound",
         },
       ],
+      head: [
+        // Open Graph
+        {
+          tag: "meta",
+          attrs: {
+            property: "og:image",
+            content: "https://chunkhound.github.io/og-image.png",
+          },
+        },
+        {
+          tag: "meta",
+          attrs: {
+            property: "og:image:width",
+            content: "1200",
+          },
+        },
+        {
+          tag: "meta",
+          attrs: {
+            property: "og:image:height",
+            content: "630",
+          },
+        },
+        {
+          tag: "meta",
+          attrs: {
+            property: "og:type",
+            content: "website",
+          },
+        },
+        // Twitter Card
+        {
+          tag: "meta",
+          attrs: {
+            name: "twitter:card",
+            content: "summary_large_image",
+          },
+        },
+        {
+          tag: "meta",
+          attrs: {
+            name: "twitter:image",
+            content: "https://chunkhound.github.io/og-image.png",
+          },
+        },
+      ],
       sidebar: [
         { label: "Quickstart", slug: "quickstart" },
         { label: "How-To Guides", slug: "how-to" },
