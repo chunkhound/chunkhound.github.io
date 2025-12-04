@@ -78,6 +78,15 @@ export default defineConfig({
             content: "https://chunkhound.github.io/og-image.png",
           },
         },
+        // Umami Analytics
+        {
+          tag: "script",
+          attrs: {
+            defer: true,
+            src: "https://cloud.umami.is/script.js",
+            "data-website-id": "b80d053f-9131-4f5c-9159-b8c71fc69a91",
+          },
+        },
       ],
       sidebar: [
         { label: "Quickstart", slug: "quickstart" },
