@@ -14,8 +14,7 @@ export default defineConfig({
     react(),
     starlight({
       title: "ChunkHound",
-      description:
-        "Modern RAG for your codebase - semantic and regex search via MCP",
+      description: "Don't search your code. Research it.",
       logo: {
         light: "./public/wordmark.svg",
         dark: "./public/wordmark-dark.svg",
