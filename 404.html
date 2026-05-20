@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="robots" content="noindex, follow" />
+  <link rel="canonical" href="https://chunkhound.ai/" />
+  <title>ChunkHound has moved — chunkhound.ai</title>
+  <script>
+    (function() {
+      // ── Redirect map: all old chunkhound.github.io paths → new chunkhound.ai paths ──
+      // Exact matches (checked first, order matters — more specific before less)
+      var REDIRECT_MAP = [
+        // P0 — exact content equivalents
+        { match: '/',            target: 'https://chunkhound.ai/' },
+        { match: '/quickstart/', target: 'https://chunkhound.ai/docs/getting-started/' },
+        { match: '/configuration/', target: 'https://chunkhound.ai/docs/configuration/' },
+        { match: '/contributing/', target: 'https://chunkhound.ai/docs/contributing/' },
+        { match: '/changelog',   target: 'https://chunkhound.ai/docs/changelog/' },
+
+        // P1 — partial content (related but not identical)
+        { match: '/how-to/',             target: 'https://chunkhound.ai/docs/getting-started/' },
+        { match: '/code-research/',      target: 'https://chunkhound.ai/' },
+        { match: '/benchmark/',          target: 'https://chunkhound.ai/' },
+        { match: '/code-expert-agent',   target: 'https://chunkhound.ai/' },
+
+        // P2 — removed content, fallback to homepage
+        { match: '/under-the-hood/',     target: 'https://chunkhound.ai/' },
+        { match: '/origin-story/',       target: 'https://chunkhound.ai/' },
+
+        // Static assets → new site equivalents
+        { match: '/favicon.svg',                target: 'https://chunkhound.ai/favicon-light.svg' },
+        { match: '/og-image.png',               target: 'https://chunkhound.ai/og-image-light.svg' },
+        { match: '/og-image.svg',               target: 'https://chunkhound.ai/og-image-light.svg' },
+        { match: '/logo.svg',                   target: 'https://chunkhound.ai/logo-light.svg' },
+        { match: '/logo-dark.svg',              target: 'https://chunkhound.ai/logo.svg' },
+        { match: '/wordmark.svg',               target: 'https://chunkhound.ai/wordmark-centered.svg' },
+        { match: '/wordmark-dark.svg',          target: 'https://chunkhound.ai/wordmark-centered-dark.svg' },
+      ];
+
+      // Prefix matches (benchmark response sub-pages)
+      var PREFIX_MAP = [
+        { prefix: '/benchmark-responses/', target: 'https://chunkhound.ai/' },
+      ];
+
+      function resolveRedirect(path) {
+        // Normalize: collapse trailing slashes (except root)
+        var normalized = path === '/' ? '/' : path.replace(/\/+$/, '');
+
+        // 1. Exact match
+        for (var i = 0; i < REDIRECT_MAP.length; i++) {
+          var rule = REDIRECT_MAP[i];
+          if (rule.match === normalized || rule.match === path) {
+            return rule.target;
+          }
+        }
+
+        // 2. Prefix match
+        for (var j = 0; j < PREFIX_MAP.length; j++) {
+          var pRule = PREFIX_MAP[j];
+          if (normalized.indexOf(pRule.prefix) === 0) {
+            return pRule.target;
+          }
+        }
+
+        // 3. Catch-all: homepage
+        return 'https://chunkhound.ai/';
+      }
+
+      var path = window.location.pathname;
+      // case-insensitive: lowercase the path for matching
+      var target = resolveRedirect(path.toLowerCase());
+
+      // Write meta refresh before JS redirect (catches non-JS crawlers)
+      var meta = document.createElement('meta');
+      meta.httpEquiv = 'refresh';
+      meta.content = '0; url=' + target;
+      document.head.appendChild(meta);
+
+      // Update fallback link for users
+      var link = document.getElementById('fallback-link');
+      if (link) link.href = target;
+
+      // JS redirect (Google executes this)
+      window.location.replace(target);
+    })();
+  </script>
+</head>
+<body>
+  <p>ChunkHound has moved to <a id="fallback-link" href="https://chunkhound.ai/">chunkhound.ai</a>.</p>
+</body>
+</html>
